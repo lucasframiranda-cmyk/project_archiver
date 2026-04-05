@@ -5,8 +5,6 @@ A Windows-based automation utility for creative professionals to archive and man
 ## Preview
 ![Project Dashboard](assets/screenshot.png)
 
-Before publishing the repository, create an `assets/` folder screenshot with generic project names only and save it as `assets/screenshot.png`.
-
 ## Description
 
 Project Archiver Tool is a CustomTkinter-based desktop application designed to scan a structured project directory, identify inactive project folders, compress them into ZIP archives, validate the archive integrity, and only then remove the original folders.
