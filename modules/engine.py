@@ -66,6 +66,11 @@ class ProjectArchiverEngine:
     def _fallback_translate(self, key: str, **kwargs) -> str:
         return key.format(**kwargs) if kwargs else key
 
+    def _is_within_root_jail(self, candidate_path: Path) -> bool:
+        resolved_root = self.root_path.resolve(strict=False)
+        resolved_candidate = candidate_path.resolve(strict=False)
+        return resolved_candidate.is_relative_to(resolved_root)
+
     def set_blacklist(self, blacklist: Iterable[str]) -> None:
         self.blacklist = {item.casefold() for item in blacklist}
 
@@ -425,11 +430,21 @@ class ProjectArchiverEngine:
         source_path = Path(archive_result["source_path"])
         archive_path = Path(archive_result["archive_path"])
 
+        if not self._is_within_root_jail(source_path):
+            raise ValueError(
+                f"Safety abort: source '{source_path}' is outside "
+                f"root '{self.root_path}'. Deletion cancelled."
+            )
+
         if not archive_path.exists():
             raise ValueError(f"Final check failed: archive missing on disk for {source_path.name}")
 
+        resolved_archive = archive_path.resolve(strict=True)
+        if resolved_archive.stat().st_size <= 0:
+            raise ValueError(f"Final check failed: archive size is zero for {archive_path.name}")
+
         try:
-            with zipfile.ZipFile(archive_path, "r") as zip_handle:
+            with zipfile.ZipFile(resolved_archive, "r") as zip_handle:
                 invalid_member = zip_handle.testzip()
         except zipfile.BadZipFile as exc:
             raise ValueError(f"Final check failed: cannot reopen {archive_path.name}") from exc
@@ -442,7 +457,7 @@ class ProjectArchiverEngine:
             return
 
         log_callback(self.translate("engine_final_check_delete", name=source_path.name))
-        shutil.rmtree(source_path)
+        shutil.rmtree(source_path.resolve(strict=True))
 
     def _collect_files(self, folder_path: Path) -> list[tuple[Path, int]]:
         files: list[tuple[Path, int]] = []

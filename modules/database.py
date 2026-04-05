@@ -102,6 +102,36 @@ class StatsDatabase:
         self._data["blacklist"] = cleaned
         self._write()
 
+    def record_archive(
+        self,
+        *,
+        source_path: str,
+        archive_path: str,
+        original_size: int,
+        archive_size: int,
+        saved_bytes: int,
+    ) -> None:
+        month_key = current_month_key()
+        monthly_data = self._data["monthly"].setdefault(
+            month_key,
+            {"folders_archived": 0, "space_saved_bytes": 0},
+        )
+        self._data["totals"]["folders_archived"] += 1
+        self._data["totals"]["space_saved_bytes"] += saved_bytes
+        monthly_data["folders_archived"] += 1
+        monthly_data["space_saved_bytes"] += saved_bytes
+        self._data["history"].append(
+            {
+                "timestamp": datetime.now().isoformat(timespec="seconds"),
+                "source_path": source_path,
+                "archive_path": archive_path,
+                "original_size": original_size,
+                "archive_size": archive_size,
+                "saved_bytes": saved_bytes,
+            }
+        )
+        self._write()
+
 
 class SettingsDatabase:
     def __init__(self, file_path: str | Path = "settings.json") -> None:
@@ -140,34 +170,4 @@ class SettingsDatabase:
 
     def set_root_path(self, root_path: str | Path) -> None:
         self._data["root_path"] = str(root_path)
-        self._write()
-
-    def record_archive(
-        self,
-        *,
-        source_path: str,
-        archive_path: str,
-        original_size: int,
-        archive_size: int,
-        saved_bytes: int,
-    ) -> None:
-        month_key = current_month_key()
-        monthly_data = self._data["monthly"].setdefault(
-            month_key,
-            {"folders_archived": 0, "space_saved_bytes": 0},
-        )
-        self._data["totals"]["folders_archived"] += 1
-        self._data["totals"]["space_saved_bytes"] += saved_bytes
-        monthly_data["folders_archived"] += 1
-        monthly_data["space_saved_bytes"] += saved_bytes
-        self._data["history"].append(
-            {
-                "timestamp": datetime.now().isoformat(timespec="seconds"),
-                "source_path": source_path,
-                "archive_path": archive_path,
-                "original_size": original_size,
-                "archive_size": archive_size,
-                "saved_bytes": saved_bytes,
-            }
-        )
         self._write()
