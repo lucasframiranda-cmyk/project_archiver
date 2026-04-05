@@ -173,9 +173,6 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
         "engine_cleanup_aborted": "Cleanup aborted for {name}: {error}",
         "engine_final_check_delete": "[FINAL_CHECK] Zip verified for {name}. Proceeding to delete original folder...",
         "engine_final_check_missing": "[FINAL_CHECK] Original folder already absent for {name}.",
-        "change_root": "Change",
-        "root_changed": "Root path updated to {path}",
-        "sample_root_hint": "Select a projects folder",
     },
 }
 

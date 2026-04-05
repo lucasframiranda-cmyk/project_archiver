@@ -378,7 +378,7 @@ class ProjectArchiverApp(ctk.CTk):
 
         self.breadcrumb_label = ctk.CTkLabel(
             topbar,
-            text=r"G: > Work",
+            text="",
             text_color=TEXT_SECONDARY,
             font=ctk.CTkFont(size=12, weight="bold"),
             anchor="w",
